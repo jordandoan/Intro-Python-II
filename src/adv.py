@@ -61,46 +61,40 @@ room['treasure'].s_to = room['narrow']
 # Print an error message if the movement isn't allowed.
 #
 # If the user enters "q", quit the game.
-player = Player("Jordan", room['outside'])
-playing = True
+
 
 def prompt(room: Room) -> str:
     ans = input("What direction would you like to go? [N] North [W] West [S] South [E] East [I / Inventory] Show Owned Items [Get ITEM] Get Item [Q] Quit: ").lower()
     new_ans = ans.split(' ')
     if len(new_ans) == 1:
         ans = ans[0]
-        if ans == "q":
-            return ""
-        elif ans == "i":
+        if ans == "i":
             print(player.listItems())
-            return prompt(room)
-        elif ans == "n" or ans == "s" or ans == "w" or ans == "e":
+        elif ans == "n" or ans == "s" or ans == "w" or ans == "e" or ans == "q":
             return ans
         else:
             print("Invalid action...")
-            return prompt(room)
     else:
-        if new_ans[0] != "get" and new_ans[0] != "take" and new_ans[0] != "drop":
-            print("Invalid action...")
-            return prompt(room)
-        elif new_ans[0] =="drop":
-            if not player.items.get(new_ans[1]):
-                print("Item does not exist")
-                return prompt(room)
-            else:
-                item = player.items.pop(new_ans[1])
-                room.items.update({new_ans[1]: item})
-                item.on_drop()
-                return prompt(room)
+        check_action(new_ans, room)
+
+def check_action(ans: [str], room: Room) -> None:
+    if ans[0] != "get" and ans[0] != "take" and ans[0] != "drop":
+        print("Invalid action...")
+    elif ans[0] == "drop":
+        if not player.items.get(ans[1]):
+            print("Item does not exist")
         else:
-            if not room.items.get(new_ans[1]):
-                print("Item does not exist")
-                return prompt(room)
-            else:
-                item = room.items.pop(new_ans[1])
-                player.items.update({new_ans[1]: item})
-                item.on_take()
-                return prompt(room)
+            item = player.items.pop(ans[1])
+            room.items.update({ans[1]: item})
+            item.on_drop()
+    else:
+        if not room.items.get(ans[1]):
+            print("Item does not exist")
+        else:
+            item = room.items.pop(ans[1])
+            player.items.update({ans[1]: item})
+            item.on_take()
+    return None
 
 
 def check_room(player: Player, ans: str):
@@ -111,12 +105,20 @@ def check_room(player: Player, ans: str):
         player.current_room = new_room
 
 
+directions = ["n","s","w","e","q"]
+
+player = Player("Jordan", room['outside'])
+playing = True
+
 while playing:
     print(player.current_room.name)
     print(player.current_room.description)
-    print(player.current_room.listItems())
-    ans = prompt(player.current_room)
-    if not ans:
+    print(f"Room items: {player.current_room.listItems()}")
+    ans = ""
+    while ans not in directions:
+        ans = prompt(player.current_room)
+    if ans == "q":
         break
     check_room(player, ans)
     print("\n")
+print("Thanks for playing!")
