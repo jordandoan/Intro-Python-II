@@ -10,7 +10,7 @@ class Room:
         self.w_to = None
         self.items = {}
 
-    def listItems(self) -> [str]:
+    def listItems(self) -> str:
         if not(len(self.items)):
             return ['No items']
         arr = [0]*len(self.items)
@@ -18,4 +18,4 @@ class Room:
         for key in self.items:
             arr[count] = self.items[key].name
             count += 1
-        return arr
+        return f"Room items: {arr}"
