@@ -1,5 +1,6 @@
 from room import Room
 from player import Player
+from item import Item
 # Declare all the rooms
 
 room = {
@@ -21,6 +22,16 @@ chamber! Sadly, it has already been completely emptied by
 earlier adventurers. The only exit is to the south."""),
 }
 
+# Items
+sword = Item("Sword", "A long sword.")
+coins = Item("Coins", "Money!")
+nugget = Item("Chicken Nugget", "Looks good...")
+branch = Item("Branch", "A stick.")
+
+room['foyer'].items.update({"sword": sword})
+room['overlook'].items.update({"branch": branch})
+room['overlook'].items.update({"coins": coins})
+room['treasure'].items.update({"nugget": nugget})
 
 # Link rooms together
 
@@ -32,6 +43,7 @@ room['overlook'].s_to = room['foyer']
 room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
+
 
 #
 # Main
@@ -51,20 +63,45 @@ room['treasure'].s_to = room['narrow']
 # If the user enters "q", quit the game.
 player = Player("Jordan", room['outside'])
 playing = True
-def prompt() -> str:
-    ans = input("What direction would you like to go? [N] North [W] West [S] South [E] East [Q] Quit: ")
-    ans = ans[0].lower()
-    if ans == "q":
-        return ""
-    elif ans == "n" or ans == "s" or ans == "w" or ans == "e":
-        return ans
+
+def prompt(room: Room) -> str:
+    ans = input("What direction would you like to go? [N] North [W] West [S] South [E] East [Get ITEM] Get Item [Q] Quit: ").lower()
+    new_ans = ans.split(' ')
+    if len(new_ans) == 1:
+        ans = ans[0]
+        if ans == "q":
+            return ""
+        elif ans == "n" or ans == "s" or ans == "w" or ans == "e":
+            return ans
+        else:
+            print("Invalid action...")
+            return prompt(room)
     else:
-        print("Invalid action...")
-        return prompt()
+        if new_ans[0] != "get":
+            print("Invalid action...")
+            return prompt(room)
+        if not room.items.get(new_ans[1]):
+            print("Item does not exist")
+            return prompt(room)
+        else:
+            item = room.items.pop(new_ans[1])
+            player.items.update({new_ans[1]: item})
+
+
+def check_room(player: Player, ans: str):
+    new_room = getattr(player.current_room, f"{ans}_to")
+    if not new_room:
+        print("There is nothing here.")
+    else:
+        player.current_room = new_room
+
 
 while playing:
     print(player.current_room.name)
     print(player.current_room.description)
-    ans = prompt()
+    print(player.current_room.listItems())
+    ans = prompt(player.current_room)
     if not ans:
         break
+    check_room(player, ans)
+    print("\n")

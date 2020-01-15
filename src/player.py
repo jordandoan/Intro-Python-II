@@ -4,3 +4,4 @@ class Player:
     def __init__(self, name, location):
         self.name = name
         self.current_room = location
+        self.items = {}
